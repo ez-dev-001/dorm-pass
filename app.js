@@ -311,6 +311,7 @@ async function handleRegister(e) {
     const studentId = document.getElementById('studentId').value;
     const dormitory = document.getElementById('dormitory').value;
     const room = document.getElementById('room').value;
+
     
     // Validation
     if (password !== confirmPassword) {
@@ -318,7 +319,13 @@ async function handleRegister(e) {
         showError('Паролі не співпадають', 'regConfirmPassword');
         return;
     }
-    
+     // Добавьте проверку капчи перед основной валидацией
+    const captchaInput = document.getElementById('captchaInput').value;
+    if (captchaInput !== currentCaptcha) {
+        showError('Невірно введена капча', 'captchaInput');
+        initCaptcha(); // Генерируем новую капчу
+        return;
+    }
     // Check if login already exists in users or pendingUsers
     const transaction1 = db.transaction(['users'], 'readonly');
     const usersStore = transaction1.objectStore('users');
@@ -498,7 +505,27 @@ function showError(message, elementId = null) {
         }
     }
 }
+function generateCaptcha() {
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let captcha = "";
+    for (let i = 0; i < 6; i++) {
+        captcha += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return captcha;
+}
 
-// For demo purposes:
-console.log('Тестовий логін: student1, пароль: pass123');
-console.log('Тестовий адмін: admin, пароль: admin123');
+
+let currentCaptcha = generateCaptcha();
+
+function initCaptcha() {
+    currentCaptcha = generateCaptcha();
+    document.getElementById('captchaText').textContent = currentCaptcha;
+}
+
+
+document.getElementById('refreshCaptcha')?.addEventListener('click', initCaptcha);
+
+
+document.addEventListener('DOMContentLoaded', initCaptcha);
+
+
